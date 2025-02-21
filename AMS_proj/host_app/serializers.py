@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import User, Department
 from django.contrib.auth import authenticate
 from visitor_app.models import Visitor
-
+from role_app.models import Role
 class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Department
@@ -12,11 +12,10 @@ class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     department = serializers.PrimaryKeyRelatedField(queryset=Department.objects.all(), required=True, write_only = True)
     depart = serializers.CharField(source='department.name', read_only=True)
-    # role = serializers.CharField(source='user_type')
+    role = serializers.PrimaryKeyRelatedField(queryset=Role.objects.all(), required=False, allow_null=True) 
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'password','department','depart','role','user_type')
-        read_only_fields = ['role', 'user_type']
+        fields = ('id', 'username', 'email', 'password','department','depart','role')
         extra_kwargs = {
             'password': {'write_only': True}
         }
@@ -67,10 +66,9 @@ class RescheduleSerializer(serializers.ModelSerializer):
 
 class UserUpdateSerializer(serializers.ModelSerializer):
     department = serializers.CharField(source='visiting_to.department.name', read_only=True)
-    # role = serializers.CharField(source='user_type')
-
+    action = serializers.CharField(source='role.name', default="", read_only=True)
 
     class Meta:
         model = User
-        fields = ['id','username','department','email','role','user_type','is_active']
+        fields = ['id','username','department','email','role','is_active','action']
         read_only_fields = ['id', 'username']

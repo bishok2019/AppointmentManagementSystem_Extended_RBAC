@@ -39,7 +39,6 @@ class PermissionCategoryDetailSerializer(serializers.ModelSerializer):
         model = PermissionCategory
         fields = ['id', 'name','is_active','permissions']
 
-
 class PermissionCategoryDetailSerializer(serializers.ModelSerializer):
     permissions = serializers.SerializerMethodField()
 

@@ -26,4 +26,4 @@ class RoleDetailView(generics.RetrieveUpdateAPIView):
     queryset = Role.objects.all()
     serializer_class = RoleDetailSerializer
     # authentication_classes = [JWTAuthentication]
-    permission_classes = [IsSuperUser]
+    # permission_classes = [IsSuperUser]

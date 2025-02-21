@@ -3,9 +3,6 @@ from .models import PermissionCategory
 from rest_framework import generics, filters
 from rest_framework.permissions import IsAuthenticated
 from .permissions import IsSuperUser
-# from rest_framework_simplejwt.authentication import JWTAuthentication
-# from user.pagination import CustomPagination
-# from django_filters.rest_framework import DjangoFilterBackend
 
 class PermissionCategoryListCreateView(generics.ListCreateAPIView):
     queryset = PermissionCategory.objects.all()
@@ -20,5 +17,3 @@ class PermissionCategoryListCreateView(generics.ListCreateAPIView):
 class PermissionCategoryDetailView(generics.RetrieveUpdateAPIView):
     queryset = PermissionCategory.objects.all()
     serializer_class = PermissionCategoryDetailSerializer
-    permission_classes = [IsSuperUser]
-

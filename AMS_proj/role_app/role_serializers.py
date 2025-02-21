@@ -10,11 +10,27 @@ class RoleCreateSerializer(serializers.ModelSerializer):
         model = Role
         fields = ['name', 'permissions']
     
+    # def create(self, validated_data):
+    #     # Extract permissions from validated_data
+    #     permissions = validated_data.pop('permissions',[])
+    #     # creating the role without permissions
+    #     user = self.context['request'].user
+    #     validated_data['created_by'] = user
+    #     role = Role.objects.create(**validated_data)
+    #     #assigning permissions using .set()
+    #     role.permissions.set(permissions)
+    #     return role
+    
     def create(self, validated_data):
+        # Extract permissions from validated_data
+        permissions = validated_data.pop('permissions',[])
+        # creating the role without permissions
         user = self.context['request'].user
         validated_data['created_by'] = user
         with transaction.atomic():
             role = Role.objects.create(**validated_data)
+            #assigning permissions using .set()
+            role.permissions.set(permissions)
             return role
 
 class RoleListSerializer(serializers.ModelSerializer):  
@@ -32,7 +48,18 @@ class RoleDetailSerializer(serializers.ModelSerializer):
     def get_permissions(self, obj):
         return obj.permissions.values('id', 'name', 'code')
     
+    # def update(self, instance, validated_data):
+    #     user = self.context['request'].user
+    #     validated_data['updated_by'] = user
+    #     return instance
+
     def update(self, instance, validated_data):
         user = self.context['request'].user
-        validated_data['updated_by'] = user
+        permissions = validated_data.pop('permissions', None)
+        instance.name = validated_data.get('name', instance.name)
+        instance.is_active = validated_data.get('is_active', instance.is_active)
+        instance.updated_by = user
+        if permissions is not None:
+            instance.permissions.set(permissions)
+        instance.save()
         return instance

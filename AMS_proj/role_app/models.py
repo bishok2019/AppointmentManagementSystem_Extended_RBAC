@@ -6,8 +6,8 @@ from django.conf import settings
 class BaseModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='%(class)s_created_by', null=True, blank=True)
-    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='%(class)s_updated_by', null=True, blank=True)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, related_name='%(class)s_created_by', null=True, blank=True)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, related_name='%(class)s_updated_by', null=True, blank=True)
     is_active = models.BooleanField(default=True)
     
     class Meta:
@@ -22,8 +22,6 @@ class Role(BaseModel):
 
 class PermissionCategory(BaseModel):
     name = models.CharField(max_length=50, unique=True)
-
-
     def __str__(self):
         return self.name
 

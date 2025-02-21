@@ -21,18 +21,7 @@ class Department(models.Model):
 class User(AbstractBaseUser, PermissionsMixin):
     department = models.ForeignKey(Department, on_delete=models.CASCADE, null=True, blank=True)
     username = models.CharField(max_length=150, unique=True)
-    USER_TYPE_CHOICES = (
-        ('ADMIN', 'Admin'),
-        ('MANAGER', 'Manager'),
-        ('STAFF', 'Staff'),
-        ('OTHER', 'Other'),
-    )
-    user_type = models.CharField(
-        max_length=20, 
-        choices=USER_TYPE_CHOICES, 
-        default='STAFF'
-    )
-    role = models.ForeignKey(Role, on_delete=models.CASCADE, related_name='users', null=True, blank=True)
+    role = models.ForeignKey(Role, on_delete=models.CASCADE, related_name='role', null=True, blank=True)
     email = models.EmailField(_("email address"), unique=True)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
