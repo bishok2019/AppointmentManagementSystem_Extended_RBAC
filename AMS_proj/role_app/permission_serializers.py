@@ -1,4 +1,4 @@
-#serializers.py
+#permission_serializers.py
 from .models import PermissionCategory, Permission
 from django.db import transaction
 from rest_framework import serializers
@@ -10,6 +10,7 @@ class PermissionCategoryCreateSerializer(serializers.ModelSerializer):
         fields = ['name']
 
     def create(self, validated_data):
+        #to save who created,s we user context from view that send request
         user = self.context['request'].user
         validated_data['created_by'] = user
         with transaction.atomic():
@@ -39,29 +40,21 @@ class PermissionCategoryDetailSerializer(serializers.ModelSerializer):
         model = PermissionCategory
         fields = ['id', 'name','is_active','permissions']
 
-class PermissionCategoryDetailSerializer(serializers.ModelSerializer):
-    permissions = serializers.SerializerMethodField()
-
-    class Meta:
-        model = PermissionCategory
-        fields = ['id', 'name', 'is_active', 'permissions']
-
     def get_permissions(self, obj):
         return obj.permissions.values('id', 'name', 'code')
     
-    def update(self, instance, validated_data):
-        user = self.context['request'].user
-        validated_data['updated_by'] = user
-        with transaction.atomic():
-            if 'name' in validated_data:    
-                instance = super().update(instance, validated_data)
-                methods = ["create","update", "read","delete"]
-                for method in methods:
-                    permission = Permission.objects.filter(permissioncategory=instance)
-                    permission.update(
-                        name=f"{method} {instance.name.lower()}",
-                        code=f"{method}_{instance.name.lower()}",
-                    )
-                return instance
-            else:
-                return super().update(instance, validated_data)
+
+class PermissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Permission
+        fields = ['id', 'name', 'code']
+
+class PermissionCategoryUpdateSerializer(serializers.ModelSerializer):
+
+    # permissions_detail = PermissionSerializer(many=True, read_only=True)
+    class Meta:
+        model = PermissionCategory
+        fields = ['id', 'name','is_active','permissions']
+
+    def get_permissions(self, obj):
+        return obj.permissions.values('id', 'name', 'code')

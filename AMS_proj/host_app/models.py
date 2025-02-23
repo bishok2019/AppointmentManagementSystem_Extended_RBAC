@@ -21,7 +21,7 @@ class Department(models.Model):
 class User(AbstractBaseUser, PermissionsMixin):
     department = models.ForeignKey(Department, on_delete=models.CASCADE, null=True, blank=True)
     username = models.CharField(max_length=150, unique=True)
-    role = models.ForeignKey(Role, on_delete=models.CASCADE, related_name='role', null=True, blank=True)
+    role = models.ManyToManyField(Role, related_name='role', blank=True)
     email = models.EmailField(_("email address"), unique=True)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)

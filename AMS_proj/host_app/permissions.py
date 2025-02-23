@@ -16,12 +16,17 @@ class HasRolePermission(BasePermission):
 
         if not required_permission:
             return True
-            
-        user_role = request.user.role
-        if not user_role:
+        #Get all roles for the user
+        user_roles = request.user.role.all()
+        if not user_roles:
+            return False
+        
+        for role in user_roles:
+            if role.permissions.filter(code=required_permission).exists():
+                return True
             return False
             
-        return user_role.permissions.filter(code=required_permission).exists()
+        # return user_role.permissions.filter(code=required_permission).exists()
 
 class IsAdminUser(BasePermission):
     def has_permission(self, request, view):

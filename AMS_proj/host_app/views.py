@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .serializers import DepartmentSerializer, UserSerializer, LoginSerializer, RescheduleSerializer, VisitorInfoSerializer, UserUpdateSerializer
+from .serializers import DepartmentSerializer, UserSerializer, LoginSerializer, VisitorInfoSerializer, UserUpdateSerializer
 from rest_framework.generics import ListAPIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -11,7 +11,7 @@ from role_app.models import Role
 from .permissions import HasRolePermission
 
 class DepartmentRegistrationView(APIView):
-    permission_classes = [IsAuthenticated,HasRolePermission]
+    permission_classes = [HasRolePermission]
     serializer_class = DepartmentSerializer
     required_permission = 'can_create_department'
     
@@ -83,15 +83,26 @@ class UserRegistrationView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class GetUserInfo(APIView):
-    permission_classes = [IsAuthenticated, HasRolePermission]
+    # permission_classes = [IsAuthenticated, HasRolePermission]
     serializer_class = UserSerializer
-    required_permission = 'can_read_user'
+    # required_permission = 'can_read_user'
 
     def get(self, request):
         host = request.user
         serializer = UserSerializer(host)
         return Response(serializer.data)
 
+class GetUserView(APIView):
+    permission_classes = [HasRolePermission]
+    serializer_class = UserUpdateSerializer
+    required_permission = 'can_read_user'
+    def get(self, request):
+        user = User.objects.all()
+        if user.exists():
+            serializer = UserUpdateSerializer(user, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response({"msg": "No users found."}, status=status.HTTP_404_NOT_FOUND)
+    
 class UpdateUserView(APIView):
     permission_classes = [HasRolePermission]
     serializer_class = UserUpdateSerializer
@@ -109,19 +120,13 @@ class UpdateUserView(APIView):
                 serializer = UserUpdateSerializer(user, many=True)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response({"msg": "User not found."}, status=status.HTTP_404_NOT_FOUND)
-        
-        user = User.objects.all()
-        if user.exists():
-            serializer = UserUpdateSerializer(user, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response({"msg": "No users found."}, status=status.HTTP_404_NOT_FOUND)
 
-    def put(self, request, pk=None, format=None):
+    def patch(self, request, pk=None, format=None):
         user_to_update = User.objects.filter(pk=pk).first()
         if not user_to_update:
             return Response({"msg": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        serializer = UserUpdateSerializer(user_to_update, data=request.data)
+        serializer = UserUpdateSerializer(user_to_update, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response({'msg': 'User successfully updated!'}, status=status.HTTP_200_OK)
@@ -146,34 +151,3 @@ class UserLoginView(APIView):
             'status': 'error',
             'message': serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
-
-class RescheduleVisitor(APIView):
-    permission_classes = [IsAuthenticated, HasRolePermission]
-    serializer_class = RescheduleSerializer
-    required_permission = 'can_update_appointments'
-
-    def get(self, request, pk=None):
-        host = request.user
-        if pk is not None:
-            visitors = Visitor.objects.filter(pk=pk, visiting_to=host)
-            if visitors.exists():
-                serializer = RescheduleSerializer(visitors, many=True)
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response({"msg": "Appointment not found."}, status=status.HTTP_404_NOT_FOUND)
-
-        visitor = Visitor.objects.filter(visiting_to=host)
-        if visitor.exists():
-            serializer = VisitorInfoSerializer(visitor, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response({"msg": "You have no appointments."}, status=status.HTTP_404_NOT_FOUND)
-
-    def patch(self, request, pk=None, format=None):
-        host = request.user
-        visitor = Visitor.objects.filter(pk=pk, visiting_to=host).first()
-        if not visitor:
-            return Response({"msg": "Appointment not found."}, status=status.HTTP_404_NOT_FOUND)
-        serializer = RescheduleSerializer(visitor, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({'msg': 'Appointment successfully rescheduled!'}, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

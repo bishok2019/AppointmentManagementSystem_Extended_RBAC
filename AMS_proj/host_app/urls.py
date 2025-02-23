@@ -10,11 +10,11 @@ urlpatterns = [
     path('login/', views.UserLoginView.as_view(), name='login-user' ),
     path('', views.GetUserInfo.as_view(), name='get-User-info' ),
 
+    path('user/', views.GetUserView.as_view(), name='get-all-user' ),
     path('user/<int:pk>/', views.UpdateUserView.as_view(), name='update-user-by-id' ),
-    path('user/', views.UpdateUserView.as_view(), name='get-all-user' ),
 
-    path('appointments/', views.RescheduleVisitor.as_view(), name='get-appointment-all' ),
-    path('appointments/<int:pk>/', views.RescheduleVisitor.as_view(), name='get-appointment-by-id' ),
+    # path('appointments/', views.RescheduleVisitor.as_view(), name='get-appointment-all' ),
+    # path('appointments/<int:pk>/', views.RescheduleVisitor.as_view(), name='get-appointment-by-id' ),
     
 
 ]

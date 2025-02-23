@@ -15,3 +15,10 @@ class VisitorInfoSerializer(serializers.ModelSerializer):
         model = Visitor
         fields = ['id','name', 'email','photo','phone_num','status','visiting_to', 'meeting_date', 'meeting_time','reason','department',]
         read_only_fields = ['status']
+
+class RescheduleSerializer(serializers.ModelSerializer):
+    visiting_to = serializers.CharField(source='visiting_to.username')
+    class Meta:
+        model = Visitor
+        fields = ['id','meeting_date', 'meeting_time','status','visiting_to']
+        read_only_fields = ['id','visiting_to']

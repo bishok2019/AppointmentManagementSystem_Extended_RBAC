@@ -21,8 +21,12 @@ class HasPermission(BasePermission):
 
         if not required_permission:
             return True # If no specific permission is required, allow access
-        
-        # Check if user has the required permission
-        user_permissions = set(request.user.role.permissions.values_list('code', flat=True))
+        user_roles = request.user.role.all()
+        user_permissions=set()
+        for role in user_roles:
+        # Checking if user has the required permission
+            user_permissions = set(Permission.objects.filter(roles__in=user_roles).values_list('code', flat=True))
+            #This is wrong because role and user are manytomanykey it can be usefull when accessing single object that is using foreign key
+            # user_permissions = set(request.user.role.permissions.values_list('code', flat=True))
         return required_permission in user_permissions
         

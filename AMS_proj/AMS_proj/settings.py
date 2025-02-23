@@ -30,7 +30,9 @@ INSTALLED_APPS = [
     'host_app',
     'visitor_app',
     'rest_framework',
-    'drf_spectacular'
+    'drf_spectacular',
+    # 'rest_framework_simplejwt',
+    # 'rest_framework_simplejwt.token_blacklist',
 
 ]
 
@@ -130,3 +132,17 @@ SPECTACULAR_SETTINGS = {
 MEDIA_ROOT =BASE_DIR/"media"
 MEDIA_URL = '/media/'
 AUTH_USER_MODEL = 'host_app.User'
+
+# REST_FRAMEWORK = {
+#     'DEFAULT_AUTHENTICATION_CLASSES': (
+#         'rest_framework_simplejwt.authentication.JWTAuthentication',
+#     ),
+# }
+
+# from datetime import timedelta
+# SIMPLE_JWT = {
+#     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+#     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+#     'ROTATE_REFRESH_TOKENS': True,
+#     'BLACKLIST_AFTER_ROTATION': True,
+# }

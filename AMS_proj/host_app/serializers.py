@@ -12,10 +12,11 @@ class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     department = serializers.PrimaryKeyRelatedField(queryset=Department.objects.all(), required=True, write_only = True)
     depart = serializers.CharField(source='department.name', read_only=True)
-    role = serializers.PrimaryKeyRelatedField(queryset=Role.objects.all(), required=False, allow_null=True) 
+    role = serializers.PrimaryKeyRelatedField(queryset=Role.objects.all(), required=False, allow_null=True, write_only=True)
+    action = serializers.SerializerMethodField() # it is used when you have to specify method like get in below
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'password','department','depart','role')
+        fields = ('id', 'username', 'email', 'password','department','depart','role','action')
         extra_kwargs = {
             'password': {'write_only': True}
         }
@@ -28,6 +29,10 @@ class UserSerializer(serializers.ModelSerializer):
             department=validated_data['department']
         )
         return host
+    
+    def get_action(self, obj):
+        roles = obj.role.all()
+        return ", ".join(role.name for role in roles) or None
  
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
@@ -57,18 +62,17 @@ class VisitorInfoSerializer(serializers.ModelSerializer):
         fields = ['id','name', 'email','photo','phone_num','status','visiting_to', 'meeting_date', 'meeting_time','reason','department',]
         read_only_fields = ['status']
         
-class RescheduleSerializer(serializers.ModelSerializer):
-    visiting_to = serializers.CharField(source='visiting_to.username')
-    class Meta:
-        model = Visitor
-        fields = ['id','meeting_date', 'meeting_time','status','visiting_to']
-        read_only_fields = ['id','visiting_to']
-
 class UserUpdateSerializer(serializers.ModelSerializer):
     department = serializers.CharField(source='visiting_to.department.name', read_only=True)
-    action = serializers.CharField(source='role.name', default="", read_only=True)
+    action = serializers.SerializerMethodField()
+    #this willnot work because it expect single role but its have manytomany relation with user
+    # action = serializers.CharField(source='role.name', default="", read_only=True)
 
     class Meta:
         model = User
         fields = ['id','username','department','email','role','is_active','action']
         read_only_fields = ['id', 'username']
+
+    def get_action(self, obj):
+        roles = obj.role.all()
+        return ", ".join(role.name for role in roles) or None
