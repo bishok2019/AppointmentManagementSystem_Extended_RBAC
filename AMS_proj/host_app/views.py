@@ -82,8 +82,8 @@ class UserRegistrationView(APIView):
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class GetUserInfo(APIView):
-    # permission_classes = [IsAuthenticated, HasRolePermission]
+class GetYourInfo(APIView):
+    permission_classes = [IsAuthenticated, HasRolePermission]
     serializer_class = UserSerializer
     # required_permission = 'can_read_user'
 

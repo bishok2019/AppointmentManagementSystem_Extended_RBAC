@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView
-from rest_framework.permissions import IsAdminUser, AllowAny
+from rest_framework.permissions import IsAdminUser, AllowAny, IsAuthenticated
 from host_app.permissions import HasRolePermission
 # Create your views here.
 class RegisterVisitorView(APIView):
@@ -21,11 +21,13 @@ class RegisterVisitorView(APIView):
 class VisitorView(ListAPIView):
     queryset = Visitor.objects.all()
     serializer_class = VisitorInfoSerializer
-    permission_classes = []
+    permission_classes = [HasRolePermission]
+    required_permission =  'can_read_visitor'
 
 class UpdateVisitorView(APIView):
     serializer_class = VisitorSerializer
-
+    permission_classes = [HasRolePermission]
+    required_permission =  'can_update_visitor'
     def get(self, request, pk=None):
         if pk is not None:
             visitors = Visitor.objects.filter(pk=pk).first()
@@ -42,14 +44,11 @@ class UpdateVisitorView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response({'msg': 'Appointment successfully rescheduled!'}, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)        
 
-class YourVisitorView(APIView):
-    # permission_classes = [HasRolePermission]
+class YourAppointmentView(APIView):
+    permission_classes = [IsAuthenticated]
     serializer_class = RescheduleSerializer
-    # required_permission = 'can_update_appointment'
-
     def get(self, request, pk=None):
         host = request.user
         visitor = Visitor.objects.filter(visiting_to=host)
@@ -58,7 +57,7 @@ class YourVisitorView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response({"msg": "You have no appointments."}, status=status.HTTP_404_NOT_FOUND)
 
-class UpdateAppointmentView(APIView):
+class UpdateYourAppointmentView(APIView):
     # permission_classes = [HasRolePermission]
     serializer_class = RescheduleSerializer
     # required_permission = 'can_update_appointment'

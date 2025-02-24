@@ -7,6 +7,6 @@ urlpatterns = [
     path('visitor/', views.VisitorView.as_view(), name='get-visitor' ),
     path('visitor/<int:pk>', views.UpdateVisitorView.as_view(), name='update-visitor' ),
 
-    path('appointment/', views.YourVisitorView.as_view(), name='get-appointment' ),
-    path('appointment/<int:pk>', views.UpdateAppointmentView.as_view(), name='update-appointment' ),
+    path('appointment/', views.YourAppointmentView.as_view(), name='get-appointment' ),
+    path('appointment/<int:pk>', views.UpdateYourAppointmentView.as_view(), name='update-appointment' ),
 ]
