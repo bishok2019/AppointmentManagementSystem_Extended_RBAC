@@ -93,8 +93,8 @@ class GetYourInfo(APIView):
         return Response(serializer.data)
 
 class GetUserView(APIView):
-    permission_classes = [HasRolePermission]
     serializer_class = UserUpdateSerializer
+    permission_classes = [HasRolePermission]
     required_permission = 'can_read_user'
     def get(self, request):
         user = User.objects.all()
@@ -108,20 +108,15 @@ class UpdateUserView(APIView):
     serializer_class = UserUpdateSerializer
     required_permission = 'can_update_user'
 
-    # def get_required_permission(self):
-    #     if self.request.method == 'PUT':
-    #         return 'can_update_user'
-    #     return 'can_read_user'
-
     def get(self, request, pk=None):
         if pk is not None:
             user = User.objects.filter(pk=pk)
-            if user.exists():
+            if user:
                 serializer = UserUpdateSerializer(user, many=True)
                 return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response({"msg": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response({"msg": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    def patch(self, request, pk=None, format=None):
+    def put(self, request, pk=None, format=None):
         user_to_update = User.objects.filter(pk=pk).first()
         if not user_to_update:
             return Response({"msg": "User not found."}, status=status.HTTP_404_NOT_FOUND)

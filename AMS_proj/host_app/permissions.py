@@ -17,17 +17,25 @@ class HasRolePermission(BasePermission):
         if not required_permission:
             return True
         #Get all roles for the user
-        user_roles = request.user.role.all()
+        # user_roles = request.user.role.all()
+        # if not user_roles:
+        #     return False
+        
+        # for role in user_roles:
+        #     if role.permissions.filter(code=required_permission).exists():
+        #         return True
+        
+        # Fetch roles and their permissions in a single query
+        user_roles = request.user.role.prefetch_related('permissions').all()
         if not user_roles:
             return False
-        
-        for role in user_roles:
-            if role.permissions.filter(code=required_permission).exists():
-                return True
-            return False
             
-        # return user_role.permissions.filter(code=required_permission).exists()
-
+        # Check if any role has the required permission
+        for role in user_roles:
+            if any(permission.code == required_permission for permission in role.permissions.all()):
+                return True
+        return False
+    
 class IsAdminUser(BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated and request.user.is_superuser
