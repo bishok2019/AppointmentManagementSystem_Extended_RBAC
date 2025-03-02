@@ -39,8 +39,8 @@ class CreatePermissionCategoryView(APIView):
 
 class GetPermissionCategoryView(APIView):
     serializer_class = PermissionCategoryListSerializer
-    permission_classes=[IsSuperUser]
-    # required_permission = 'can_read_permission_cat'
+    permission_classes=[IsSuperUser|HasPermission]
+    required_permission = 'can_read_permission_cat'
     def get(self, request):
         permission = PermissionCategory.objects.all()
         if permission.exists():

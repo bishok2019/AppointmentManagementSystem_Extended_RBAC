@@ -1,10 +1,7 @@
-from django.shortcuts import render
-from .serializers import DepartmentSerializer, UserSerializer, LoginSerializer, VisitorInfoSerializer, UserUpdateSerializer
-from rest_framework.generics import ListAPIView
+from .serializers import DepartmentSerializer, UserSerializer, LoginSerializer, UserUpdateSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from visitor_app.models import Visitor
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import User, Department
 from role_app.models import Role
@@ -116,7 +113,7 @@ class UpdateUserView(APIView):
                 return Response(serializer.data, status=status.HTTP_200_OK)
         return Response({"msg": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    def put(self, request, pk=None, format=None):
+    def patch(self, request, pk=None, format=None):
         user_to_update = User.objects.filter(pk=pk).first()
         if not user_to_update:
             return Response({"msg": "User not found."}, status=status.HTTP_404_NOT_FOUND)

@@ -13,7 +13,7 @@ class UserSerializer(serializers.ModelSerializer):
     department = serializers.PrimaryKeyRelatedField(queryset=Department.objects.all(), required=True, write_only = True)
     depart = serializers.CharField(source='department.name', read_only=True)
     role = serializers.PrimaryKeyRelatedField(queryset=Role.objects.all(), required=False, allow_null=True, write_only=True,many=True)
-    # it is used when you have to specify method like get in below
+    # It is used when you have to specify method like get in below.
     action = serializers.SerializerMethodField()
     class Meta:
         model = User
@@ -70,7 +70,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     action = serializers.SerializerMethodField()
     role = serializers.PrimaryKeyRelatedField(queryset=Role.objects.all(), required=False, allow_null=True, write_only=True,many=True)
 
-    #this willnot work because it expect single role but its have manytomany relation with user
+    # This willnot work because it expect single role but its have manytomany relation with user
     # action = serializers.CharField(source='role.name', default="", read_only=True)
 
     class Meta:

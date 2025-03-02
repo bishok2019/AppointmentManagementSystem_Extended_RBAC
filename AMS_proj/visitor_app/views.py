@@ -3,9 +3,10 @@ from .serializers import VisitorSerializer, VisitorInfoSerializer, RescheduleSer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView
-from rest_framework.permissions import IsAdminUser, AllowAny, IsAuthenticated
+from rest_framework.generics import ListAPIView
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from host_app.permissions import HasRolePermission
+
 # Create your views here.
 class RegisterVisitorView(APIView):
     serializer_class = VisitorSerializer
@@ -34,7 +35,7 @@ class UpdateVisitorView(APIView):
             if visitors:
                 serializer = VisitorSerializer(visitors)
                 return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response({"msg": "Appointment not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"msg": "Visitor not found."}, status=status.HTTP_404_NOT_FOUND)
     
     def patch(self, request, pk=None, format=None):
         visitor = Visitor.objects.filter(pk=pk).first()
@@ -43,7 +44,7 @@ class UpdateVisitorView(APIView):
         serializer = VisitorSerializer(visitor, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response({'msg': 'Appointment successfully rescheduled!'}, status=status.HTTP_200_OK)
+            return Response({'msg': 'Visitor successfully updated!'}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)        
 
 class YourAppointmentView(APIView):
@@ -58,7 +59,7 @@ class YourAppointmentView(APIView):
         return Response({"msg": "You have no appointments."}, status=status.HTTP_404_NOT_FOUND)
 
 class UpdateYourAppointmentView(APIView):
-    # permission_classes = [HasRolePermission]
+    permission_classes = [IsAuthenticated]
     serializer_class = RescheduleSerializer
     # required_permission = 'can_update_appointment'
 

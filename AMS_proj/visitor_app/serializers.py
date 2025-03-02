@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Visitor
+
 class VisitorSerializer(serializers.ModelSerializer):
     department = serializers.CharField(source='visiting_to.department.name', read_only=True)
     class Meta:
@@ -17,8 +18,7 @@ class VisitorInfoSerializer(serializers.ModelSerializer):
         read_only_fields = ['status']
 
 class RescheduleSerializer(serializers.ModelSerializer):
-    visiting_to = serializers.CharField(source='visiting_to.username')
+    visiting_to = serializers.CharField(source='visiting_to.username', read_only=True)
     class Meta:
         model = Visitor
         fields = ['id','meeting_date', 'meeting_time','status','visiting_to']
-        read_only_fields = ['id','visiting_to']
