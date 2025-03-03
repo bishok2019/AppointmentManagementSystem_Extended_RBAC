@@ -6,7 +6,9 @@ from rest_framework import status
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from host_app.permissions import HasRolePermission
-
+from custom_pagination import CustomPageNumberPagination
+from django_filters.rest_framework import DjangoFilterBackend
+from .filters import VisitorFilter
 # Create your views here.
 class RegisterVisitorView(APIView):
     serializer_class = VisitorSerializer
@@ -24,6 +26,9 @@ class VisitorView(ListAPIView):
     serializer_class = VisitorInfoSerializer
     permission_classes = [HasRolePermission]
     required_permission =  'can_read_visitor'
+    pagination_class=CustomPageNumberPagination
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = VisitorFilter
 
 class UpdateVisitorView(APIView):
     serializer_class = VisitorSerializer
@@ -47,16 +52,53 @@ class UpdateVisitorView(APIView):
             return Response({'msg': 'Visitor successfully updated!'}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)        
 
-class YourAppointmentView(APIView):
+# class YourAppointmentView(APIView): # Doesnot include pagination
+#     permission_classes = [IsAuthenticated]
+#     serializer_class = RescheduleSerializer
+#     pagination_class=CustomPageNumberPagination
+
+#     def get(self, request, pk=None):
+#         host = request.user
+#         visitor = Visitor.objects.filter(visiting_to=host)
+#         if visitor.exists():
+#             serializer = VisitorInfoSerializer(visitor, many=True)
+#             return Response(serializer.data, status=status.HTTP_200_OK)
+#         return Response({"msg": "You have no appointments."}, status=status.HTTP_404_NOT_FOUND)
+
+class YourAppointmentView(APIView): # Does include pagination but no navigation
     permission_classes = [IsAuthenticated]
-    serializer_class = RescheduleSerializer
+    serializer_class = VisitorInfoSerializer
+    pagination_class=CustomPageNumberPagination
+
     def get(self, request, pk=None):
         host = request.user
         visitor = Visitor.objects.filter(visiting_to=host)
-        if visitor.exists():
-            serializer = VisitorInfoSerializer(visitor, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response({"msg": "You have no appointments."}, status=status.HTTP_404_NOT_FOUND)
+        if not visitor.exists():
+            return Response({"msg": "You have no appointments."}, status=status.HTTP_404_NOT_FOUND)
+        paginator = self.pagination_class()
+        paginated_queryset = paginator.paginate_queryset(visitor, request)
+        serializer = VisitorInfoSerializer(paginated_queryset, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
+# class YourAppointmentView(ListAPIView): # Include pagination with navigation
+#     permission_classes = [IsAuthenticated]
+#     serializer_class = VisitorInfoSerializer
+#     pagination_class=CustomPageNumberPagination
+
+#     def get_queryset(self):
+#         host = self.request.user
+#         queryset = Visitor.objects.filter(visiting_to=host)
+#         if not queryset.exists():
+#             self.no_appointments = True
+#         else:
+#             self.no_appointments = False
+#         return queryset
+
+#     def list(self, request, *args, **kwargs):
+#         queryset = self.get_queryset()
+#         if hasattr(self, "no_appointments") and self.no_appointments:
+#             return Response({"msg": "You have no appointments."}, status=status.HTTP_404_NOT_FOUND)
+#         return super().list(request, *args, **kwargs)
 
 class UpdateYourAppointmentView(APIView):
     permission_classes = [IsAuthenticated]

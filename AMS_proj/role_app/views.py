@@ -7,6 +7,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .permissions import HasPermission, IsSuperUser
+from custom_pagination import CustomPageNumberPagination
 
 # class PermissionCategoryListCreateView(generics.ListCreateAPIView):
 #     queryset = PermissionCategory.objects.all()
@@ -41,6 +42,8 @@ class GetPermissionCategoryView(APIView):
     serializer_class = PermissionCategoryListSerializer
     permission_classes=[IsSuperUser|HasPermission]
     required_permission = 'can_read_permission_cat'
+    pagination_class = CustomPageNumberPagination
+
     def get(self, request):
         permission = PermissionCategory.objects.all()
         if permission.exists():

@@ -6,6 +6,10 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import User, Department
 from role_app.models import Role
 from .permissions import HasRolePermission
+from custom_pagination import CustomPageNumberPagination
+from rest_framework.generics import ListAPIView
+# from rest_framework_simplejwt.tokens import RefreshToken
+# from django.contrib.auth import logout
 
 class DepartmentRegistrationView(APIView):
     permission_classes = [HasRolePermission]
@@ -23,17 +27,24 @@ class DepartmentRegistrationView(APIView):
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class GetDepartmentView(APIView):
+# class GetDepartmentView(APIView):
+#     permission_classes = [HasRolePermission]
+#     serializer_class = DepartmentSerializer
+#     required_permission = 'can_read_department'
+
+#     def get(self, request, pk=None):
+#         department = Department.objects.all()
+#         if department.exists():
+#             serializer = DepartmentSerializer(department, many=True)
+#             return Response(serializer.data, status=status.HTTP_200_OK)
+#         return Response({"msg": "No department found."}, status=status.HTTP_404_NOT_FOUND)
+    
+class GetDepartmentView(ListAPIView):
     permission_classes = [HasRolePermission]
+    queryset=Department.objects.all().order_by('id')
     serializer_class = DepartmentSerializer
     required_permission = 'can_read_department'
-
-    def get(self, request, pk=None):
-        department = Department.objects.all()
-        if department.exists():
-            serializer = DepartmentSerializer(department, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response({"msg": "No department found."}, status=status.HTTP_404_NOT_FOUND)
+    pagination_class = CustomPageNumberPagination
 
 class UpdateDepartmentView(APIView):
     permission_classes = [HasRolePermission]
@@ -89,17 +100,25 @@ class GetYourInfo(APIView):
         serializer = UserSerializer(host)
         return Response(serializer.data)
 
-class GetUserView(APIView):
-    serializer_class = UserUpdateSerializer
+# class GetUserView(APIView):
+#     serializer_class = UserUpdateSerializer
+#     permission_classes = [HasRolePermission]
+#     required_permission = 'can_read_user'
+
+#     def get(self, request):
+#         user = User.objects.all()
+#         if user.exists():
+#             serializer = UserUpdateSerializer(user, many=True)
+#             return Response(serializer.data, status=status.HTTP_200_OK)
+#         return Response({"msg": "No users found."}, status=status.HTTP_404_NOT_FOUND)
+
+class GetUserView(ListAPIView):
     permission_classes = [HasRolePermission]
+    queryset=User.objects.all().order_by('id')
+    serializer_class = UserUpdateSerializer
     required_permission = 'can_read_user'
-    def get(self, request):
-        user = User.objects.all()
-        if user.exists():
-            serializer = UserUpdateSerializer(user, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response({"msg": "No users found."}, status=status.HTTP_404_NOT_FOUND)
-    
+    pagination_class = CustomPageNumberPagination
+
 class UpdateUserView(APIView):
     permission_classes = [HasRolePermission]
     serializer_class = UserUpdateSerializer
@@ -132,10 +151,13 @@ class UserLoginView(APIView):
         serializer = LoginSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             user = serializer.validated_data['user']
+            # refresh = RefreshToken.for_user(user)
             return Response({
                 'status': 'success',
                 'message': 'Login successful',
                 'data': {
+                    # 'refresh': str(refresh),
+                    # 'access': str(refresh.access_token),
                     'user': UserSerializer(user).data
                 }
             }, status=status.HTTP_200_OK)
@@ -143,3 +165,27 @@ class UserLoginView(APIView):
             'status': 'error',
             'message': serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
+
+# class LogoutView(APIView):
+#     permission_classes = [IsAuthenticated]
+
+#     def post(self, request):
+#         try:
+#             refresh_token = request.data.get('refresh_token')
+#             if refresh_token:
+#                 token = RefreshToken(refresh_token)
+#                 token.blacklist()
+            
+#             logout(request)
+            
+#             return Response({
+#                 'status': 'success',
+#                 'message': 'Successfully logged out'
+#             }, status=status.HTTP_200_OK)
+            
+#         except Exception as e:
+#             return Response({
+#                 'status': 'error',
+#                 'message': str(e)
+#             }, status=status.HTTP_400_BAD_REQUEST)
+        
