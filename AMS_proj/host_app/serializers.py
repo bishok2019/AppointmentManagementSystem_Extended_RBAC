@@ -10,9 +10,9 @@ class DepartmentSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
-    department = serializers.PrimaryKeyRelatedField(queryset=Department.objects.all(), required=True, write_only = True)
+    department = serializers.PrimaryKeyRelatedField(queryset=Department.objects.all(), required=False, allow_null=True, write_only = True)
     depart = serializers.CharField(source='department.name', read_only=True)
-    role = serializers.PrimaryKeyRelatedField(queryset=Role.objects.all(), required=False, allow_null=True, write_only=True,many=True)
+    role = serializers.PrimaryKeyRelatedField(queryset=Role.objects.all(), allow_null=True, write_only=True,many=True, required=False)
     # It is used when you have to specify method like get in below.
     action = serializers.SerializerMethodField()
     class Meta:
@@ -23,12 +23,19 @@ class UserSerializer(serializers.ModelSerializer):
         }
     
     def create(self, validated_data):
+
+        department = validated_data.pop('department', None)
+        roles_data = validated_data.pop('role', [])
         host = User.objects.create_user(
             username=validated_data['username'],
             email=validated_data['email'],
             password=validated_data['password'],
-            department=validated_data['department']
+            department=department
         )
+        if roles_data:
+            for role_id in roles_data:
+                role = Role.objects.get(id=role_id)
+                host.role.add(role)
         return host
     
     def get_action(self, obj):
@@ -60,7 +67,7 @@ class VisitorInfoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Visitor
-        fields = ['id','name', 'email','photo','phone_num','status','visiting_to', 'meeting_date', 'meeting_time','reason','department',]
+        fields = ['id','name', 'email','photo','phone_num','status','visiting_to', 'meeting_date', 'meeting_start_time', 'meeting_end_time','reason','department',]
         read_only_fields = ['status']
         
 class UserUpdateSerializer(serializers.ModelSerializer):
