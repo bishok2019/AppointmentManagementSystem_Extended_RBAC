@@ -1,5 +1,5 @@
 from .models import Visitor
-from .serializers import VisitorSerializer, VisitorInfoSerializer, RescheduleSerializer
+from .serializers import VisitorSerializer, VisitorInfoSerializer, RescheduleAppointmentSerializer, UpdateVisitorSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -38,15 +38,15 @@ class UpdateVisitorView(APIView):
         if pk is not None:
             visitors = Visitor.objects.filter(pk=pk).first()
             if visitors:
-                serializer = VisitorSerializer(visitors)
+                serializer = VisitorInfoSerializer(visitors)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response({"msg": "Visitor not found."}, status=status.HTTP_404_NOT_FOUND)
     
     def patch(self, request, pk=None, format=None):
         visitor = Visitor.objects.filter(pk=pk).first()
         if not visitor:
-            return Response({"msg": "Appointment not found."}, status=status.HTTP_404_NOT_FOUND)
-        serializer = VisitorSerializer(visitor, data=request.data, partial=True)
+            return Response({"msg": "Visitor not found."}, status=status.HTTP_404_NOT_FOUND)
+        serializer = UpdateVisitorSerializer(visitor, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response({'msg': 'Visitor successfully updated!'}, status=status.HTTP_200_OK)
@@ -102,7 +102,7 @@ class YourAppointmentView(APIView): # Does include pagination but no navigation
 
 class UpdateYourAppointmentView(APIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = RescheduleSerializer
+    serializer_class = RescheduleAppointmentSerializer
     # required_permission = 'can_update_appointment'
 
     def get(self, request, pk=None):
@@ -110,7 +110,7 @@ class UpdateYourAppointmentView(APIView):
         if pk is not None:
             visitors = Visitor.objects.filter(pk=pk, visiting_to=host).first()
             if visitors:
-                serializer = RescheduleSerializer(visitors)
+                serializer = VisitorInfoSerializer(visitors)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response({"msg": "Appointment not found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -119,7 +119,7 @@ class UpdateYourAppointmentView(APIView):
         visitor = Visitor.objects.filter(pk=pk, visiting_to=host).first()
         if not visitor:
             return Response({"msg": "Appointment not found."}, status=status.HTTP_404_NOT_FOUND)
-        serializer = RescheduleSerializer(visitor, data=request.data, partial=True)
+        serializer = RescheduleAppointmentSerializer(visitor, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response({'msg': 'Appointment successfully rescheduled!'}, status=status.HTTP_200_OK)
