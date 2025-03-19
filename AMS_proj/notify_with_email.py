@@ -30,7 +30,7 @@ def send_visitor_notification(visitor, change_type="update", old_host=None):
         Your appointment with {host.username} has been CONFIRMED.
         Date: {visitor.meeting_date}
         Time: {visitor.meeting_start_time} to {visitor.meeting_end_time}
-        
+        Status:{visitor.status}
 
         Please arrive 10 minutes early.
         """
@@ -59,6 +59,7 @@ def send_visitor_notification(visitor, change_type="update", old_host=None):
         Host: {host.username}
         Date: {visitor.meeting_date}
         Time: {visitor.meeting_start_time} to {visitor.meeting_end_time}
+        Status:{visitor.status}
         """
     
     send_mail(
@@ -117,7 +118,9 @@ def send_host_notification(visitor, notification_type="new", old_host=None):
         An appointment has been modified:
         Visitor: {visitor.name}
         Meeting Date: {visitor.meeting_date}
-        Meeting Time: {visitor.meeting_start_time} to {visitor.meeting_end_time}"""
+        Meeting Time: {visitor.meeting_start_time} to {visitor.meeting_end_time}
+        Status:{visitor.status}"""
+        
         recipient = host.email
         
     elif notification_type == "cancellation":
@@ -129,7 +132,9 @@ def send_host_notification(visitor, notification_type="new", old_host=None):
         An appointment has been cancelled:
         Visitor: {visitor.name}
         Date: {visitor.meeting_date}
-        Time: {visitor.meeting_start_time} to {visitor.meeting_end_time}"""
+        Time: {visitor.meeting_start_time} to {visitor.meeting_end_time}
+        Status:{visitor.status}
+        """
         recipient = host.email
 
     elif notification_type == "host_change":
@@ -141,7 +146,8 @@ def send_host_notification(visitor, notification_type="new", old_host=None):
         An appointment has been transferred to you from {old_host.username}:
         Visitor: {visitor.name} ({visitor.company})
         Date: {visitor.meeting_date}
-        Time: {visitor.meeting_start_time} to {visitor.meeting_end_time}"""
+        Time: {visitor.meeting_start_time} to {visitor.meeting_end_time}
+        Status:{visitor.status}"""
         recipient = host.email
 
     elif notification_type == "removed":
