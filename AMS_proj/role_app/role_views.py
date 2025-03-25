@@ -1,10 +1,5 @@
 from .models import Role
-from rest_framework import generics, filters
 from rest_framework.permissions import IsAuthenticated
-# from rest_framework_simplejwt.authentication import JWTAuthentication
-from .permissions import IsSuperUser
-# from user.pagination import CustomPagination
-# from django_filters.rest_framework import DjangoFilterBackend
 from .role_serializers import RoleCreateSerializer, RoleListSerializer, RoleDetailSerializer, RoleUpdateSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -14,8 +9,8 @@ from custom_pagination import CustomPageNumberPagination
 from rest_framework.generics import ListAPIView
 
 class CreateRoleView(APIView):
-    # permission_classes=[HasPermission]
-    # required_permission = 'can_create_role'
+    permission_classes=[HasPermission]
+    required_permission = 'can_create_role'
     serializer_class = RoleCreateSerializer
     def post(self, request):
         serializer = RoleCreateSerializer(data=request.data,context={'request':request})
@@ -40,15 +35,15 @@ class CreateRoleView(APIView):
 #             return Response(serializer.data, status=status.HTTP_200_OK)
 #         return Response({"msg": "No Role found."}, status=status.HTTP_404_NOT_FOUND)
 class GetRoleView(ListAPIView):
-    # permission_classes=[HasPermission]
-    # required_permission = 'can_read_role'
+    permission_classes=[HasPermission]
+    required_permission = 'can_read_role'
     queryset = Role.objects.all().order_by('id')
     serializer_class = RoleListSerializer
     pagination_class = CustomPageNumberPagination
 
 class UpdateRoleView(APIView):
-    # permission_classes=[HasPermission]
-    # required_permission = 'can_update_role'
+    permission_classes=[HasPermission]
+    required_permission = 'can_update_role'
     serializer_class = RoleUpdateSerializer
 
     def get(self, request, pk=None):
@@ -64,7 +59,7 @@ class UpdateRoleView(APIView):
         if not role_to_update:
             return Response({"msg": "Role not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        serializer = RoleUpdateSerializer(role_to_update, data=request.data, partial=True)
+        serializer = RoleUpdateSerializer(role_to_update, data=request.data, partial=True, context={'request':request})
         if serializer.is_valid():
             serializer.save()
             return Response({'msg': 'Role successfully updated!'}, status=status.HTTP_200_OK)

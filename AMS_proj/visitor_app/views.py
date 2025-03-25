@@ -24,16 +24,16 @@ class RegisterVisitorView(APIView):
 class VisitorView(ListAPIView):
     queryset = Visitor.objects.all()
     serializer_class = VisitorInfoSerializer
-    # permission_classes = [HasRolePermission]
-    # required_permission =  'can_read_visitor'
+    permission_classes = [HasRolePermission]
+    required_permission =  'can_read_visitor'
     pagination_class=CustomPageNumberPagination
     filter_backends = [DjangoFilterBackend]
     filterset_class = VisitorFilter
 
 class UpdateVisitorView(APIView):
     serializer_class = VisitorSerializer
-    # permission_classes = [HasRolePermission]
-    # required_permission =  'can_update_visitor'
+    permission_classes = [HasRolePermission]
+    required_permission =  'can_update_visitor'
     def get(self, request, pk=None):
         if pk is not None:
             visitors = Visitor.objects.filter(pk=pk).first()
@@ -103,7 +103,7 @@ class YourAppointmentView(APIView): # Does include pagination but no navigation
 class UpdateYourAppointmentView(APIView):
     permission_classes = [IsAuthenticated]
     serializer_class = RescheduleAppointmentSerializer
-    # required_permission = 'can_update_appointment'
+    required_permission = 'can_update_appointment'
 
     def get(self, request, pk=None):
         host = request.user

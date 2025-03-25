@@ -5,6 +5,7 @@ from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
 from django.conf import settings
 from host_app.models import User
+from role_app.models import BaseModel
 
 # Create your models here.
 class Visitor(models.Model):

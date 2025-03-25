@@ -1,4 +1,4 @@
-from .serializers import DepartmentSerializer, UserSerializer, LoginSerializer, UserUpdateSerializer
+from .serializers import DepartmentSerializer, UserSerializer, LoginSerializer, UserUpdateSerializer, GetUserSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -71,9 +71,9 @@ class UpdateDepartmentView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class UserRegistrationView(APIView):
-    # permission_classes = [HasRolePermission]
+    permission_classes = [HasRolePermission]
     serializer_class = UserSerializer
-    # required_permission = 'can_create_user'
+    required_permission = 'can_create_user'
     
     def post(self, request):
         serializer = UserSerializer(data=request.data)
@@ -92,12 +92,12 @@ class UserRegistrationView(APIView):
 
 class GetYourInfo(APIView):
     permission_classes = [IsAuthenticated, HasRolePermission]
-    serializer_class = UserSerializer
+    serializer_class = GetUserSerializer
     # required_permission = 'can_read_user'
 
     def get(self, request):
         host = request.user
-        serializer = UserSerializer(host)
+        serializer = GetUserSerializer(host)
         return Response(serializer.data)
 
 # class GetUserView(APIView):
@@ -113,22 +113,22 @@ class GetYourInfo(APIView):
 #         return Response({"msg": "No users found."}, status=status.HTTP_404_NOT_FOUND)
 
 class GetUserView(ListAPIView):
-    # permission_classes = [HasRolePermission]
+    permission_classes = [HasRolePermission]
+    required_permission = 'can_read_user'
     queryset=User.objects.all().order_by('id')
-    serializer_class = UserUpdateSerializer
-    # required_permission = 'can_read_user'
+    serializer_class = GetUserSerializer
     pagination_class = CustomPageNumberPagination
 
 class UpdateUserView(APIView):
-    # permission_classes = [HasRolePermission]
-    serializer_class = UserUpdateSerializer
-    # required_permission = 'can_update_user'
+    permission_classes = [HasRolePermission]
+    required_permission = 'can_update_user'
+    # serializer_class = UserUpdateSerializer
 
     def get(self, request, pk=None):
         if pk is not None:
             user = User.objects.filter(pk=pk)
             if user:
-                serializer = UserUpdateSerializer(user, many=True)
+                serializer = GetUserSerializer(user, many=True)
                 return Response(serializer.data, status=status.HTTP_200_OK)
         return Response({"msg": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -188,4 +188,3 @@ class LogoutView(APIView):
                 'status': 'error',
                 'message': str(e)
             }, status=status.HTTP_400_BAD_REQUEST)
-        

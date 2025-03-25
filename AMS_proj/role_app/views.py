@@ -40,8 +40,8 @@ class CreatePermissionCategoryView(APIView):
 
 class GetPermissionCategoryView(APIView):
     serializer_class = PermissionCategoryListSerializer
-    # permission_classes=[IsSuperUser|HasPermission]
-    # required_permission = 'can_read_permission_cat'
+    permission_classes=[IsSuperUser|HasPermission]
+    required_permission = 'can_read_permission_cat'
     pagination_class = CustomPageNumberPagination
 
     def get(self, request):
@@ -54,8 +54,8 @@ class GetPermissionCategoryView(APIView):
 class UpdatePermissionCategoryView(APIView):
     serializer_class = PermissionCategoryUpdateSerializer
     permission_classes=[IsSuperUser]
-    # required_permission = 'can_update_permission_cat'
-    # serializer_class = PermissionCategoryDetailSerializer
+    required_permission = 'can_update_permission_cat'
+    serializer_class = PermissionCategoryDetailSerializer
     def get(self, request, pk=None):
         if pk is not None:
             permission = PermissionCategory.objects.filter(pk=pk)

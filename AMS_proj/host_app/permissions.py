@@ -26,7 +26,7 @@ class HasRolePermission(BasePermission):
         #     if role.permissions.filter(code=required_permission).exists(): # This would still query for each role
         #         return True
         
-        # Fetch roles and their permissions in a single query
+        #Solves N+1 Query problem while Fetcing roles and their permissions in a single query
         user_roles = request.user.role.prefetch_related('permissions').all() # So we do this to check permission codes in memory
         if not user_roles:
             return False

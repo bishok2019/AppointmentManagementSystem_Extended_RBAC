@@ -2,7 +2,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.utils import timezone
 
-def send_visitor_notification(visitor, change_type="update", old_host=None):
+def send_visitor_notification(visitor, change_type=None, old_host=None):
     """Send visitor notifications based on status or changes"""
     if not visitor.email:
         return
@@ -24,44 +24,54 @@ def send_visitor_notification(visitor, change_type="update", old_host=None):
 
         Please note this change for your visit.
         """
-    elif status == 'confirmed':
-        subject = "Appointment Confirmed"
-        message = f"""Dear {visitor.name},
-        Your appointment with {host.username} has been CONFIRMED.
-        Date: {visitor.meeting_date}
-        Time: {visitor.meeting_start_time} to {visitor.meeting_end_time}
-        Status:{visitor.status}
-
-        Please arrive 10 minutes early.
-        """
-    elif status == 'cancelled':
-        subject = "Appointment Cancelled"
-        message = f"""Dear {visitor.name},
-        Your appointment with {host.username} on {visitor.meeting_date} has been CANCELLED.
-        Original Time: {visitor.meeting_start_time} to {visitor.meeting_end_time}
-        """
-    elif status == 'checked_in':
-        subject = "Checked-In Successfully"
-        message = f"""Hello {visitor.name},
-        You've checked in for your appointment with {host.username}.
-        Check-In Time: {timezone.now().strftime('%H:%M')}
-        """
-    elif status == 'completed':
-        subject = "Appointment Completed"
-        message = f"""Dear {visitor.name},
-        Your appointment with {host.username} has been COMPLETED.
-        Thank you for visiting!
-        """
-    else:  # For pending or other status
+    elif change_type == "creation":  # creation case
         subject = "Appointment Booked"
         message = f"""Hello {visitor.name},
         Your appointment details:
         Host: {host.username}
         Date: {visitor.meeting_date}
         Time: {visitor.meeting_start_time} to {visitor.meeting_end_time}
-        Status:{visitor.status}
+        Status: {status}"""
+        
+    else:
+        if status == 'confirmed':
+            subject = "Appointment Confirmed"
+            message = f"""Dear {visitor.name},
+            Your appointment with {host.username} has been CONFIRMED.
+            Date: {visitor.meeting_date}
+            Time: {visitor.meeting_start_time} to {visitor.meeting_end_time}
+            Status:{visitor.status}
+
+        Please arrive 10 minutes early.
         """
-    
+        elif status == 'cancelled':
+            subject = "Appointment Cancelled"
+            message = f"""Dear {visitor.name},
+            Your appointment with {host.username} on {visitor.meeting_date} has been CANCELLED.
+            Original Time: {visitor.meeting_start_time} to {visitor.meeting_end_time}
+            """
+        elif status == 'checked_in':
+            subject = "Checked-In Successfully"
+            message = f"""Hello {visitor.name},
+            You've checked in for your appointment with {host.username}.
+            Check-In Time: {timezone.now().strftime('%H:%M')}
+            """
+        elif status == 'completed':
+            subject = "Appointment Completed"
+            message = f"""Dear {visitor.name},
+            Your appointment with {host.username} has been COMPLETED.
+            Thank you for visiting!
+            """
+        else:  # For pending or other status
+            subject = "Appointment Booked"
+            message = f"""Hello {visitor.name},
+            Your appointment details:
+            Host: {host.username}
+            Date: {visitor.meeting_date}
+            Time: {visitor.meeting_start_time} to {visitor.meeting_end_time}
+            Status:{visitor.status}
+            """
+        
     send_mail(
         subject=subject,
         message=message.strip(),
@@ -69,7 +79,6 @@ def send_visitor_notification(visitor, change_type="update", old_host=None):
         recipient_list=[visitor.email],
         fail_silently=False
     )
-
 
 def send_update_notification(visitor, old_host=None):
     """Send notifications based on update type"""
@@ -176,5 +185,5 @@ def send_host_notification(visitor, notification_type="new", old_host=None):
 # Function to ensure both visitor and host are notified on creation
 def send_creation_notifications(visitor):
     """Notify both visitor and host on appointment creation"""
-    send_visitor_notification(visitor)  # Notify visitor
+    send_visitor_notification(visitor, change_type="creation")  # Notify visitor
     send_host_notification(visitor, "new")  # Notify host

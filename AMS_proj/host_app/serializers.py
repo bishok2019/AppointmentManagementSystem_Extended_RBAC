@@ -3,6 +3,8 @@ from .models import User, Department
 from django.contrib.auth import authenticate
 from visitor_app.models import Visitor
 from role_app.models import Role
+from role_app.role_serializers import RoleDetailSerializer
+
 class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Department
@@ -15,6 +17,7 @@ class UserSerializer(serializers.ModelSerializer):
     role = serializers.PrimaryKeyRelatedField(queryset=Role.objects.all(), allow_null=True, write_only=True,many=True, required=False)
     # It is used when you have to specify method like get in below.
     action = serializers.SerializerMethodField()
+    # action = PermissionCategoryDetailSerializer()
     class Meta:
         model = User
         fields = ('id', 'username', 'email', 'password','department','depart','role','action')
@@ -33,9 +36,9 @@ class UserSerializer(serializers.ModelSerializer):
             department=department
         )
         if roles_data:
-            for role_id in roles_data:
-                role = Role.objects.get(id=role_id)
-                host.role.add(role)
+            # for role_id in roles_data:
+            #     role = Role.objects.get(id=role_id)
+                host.role.set(roles_data)
         return host
     
     def get_action(self, obj):
@@ -69,6 +72,14 @@ class VisitorInfoSerializer(serializers.ModelSerializer):
         model = Visitor
         fields = ['id','name', 'email','photo','phone_num','status','visiting_to', 'meeting_date', 'meeting_start_time', 'meeting_end_time','reason','department',]
         read_only_fields = ['status']
+
+class GetUserSerializer(serializers.ModelSerializer):
+    role=RoleDetailSerializer(many=True, read_only=True)
+    class Meta:
+        model = User
+        fields = ['id','username','department','email','role','is_active']
+        # read_only_fields = ['id', 'username']
+
         
 class UserUpdateSerializer(serializers.ModelSerializer):
     # department = serializers.CharField(source='visiting_to.department.name', read_only=True)
@@ -77,7 +88,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     action = serializers.SerializerMethodField()
     role = serializers.PrimaryKeyRelatedField(queryset=Role.objects.all(), required=False, allow_null=True, write_only=True,many=True)
 
-    # This willnot work because it expect single role but its have manytomany relation with user
+    # This will not work because it expect single role but its have manytomany relation with user
     # action = serializers.CharField(source='role.name', default="", read_only=True)
 
     class Meta:
